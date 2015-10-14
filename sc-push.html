@@ -1,0 +1,38 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE
+The complete set of authors may be found at http://polymer.github.io/AUTHORS
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS
+-->
+<link rel="import" href="../polymer/polymer.html" />
+
+<dom-module id="sc-push">
+  <template></template>
+</dom-module>
+
+<script>
+(function () {
+
+  window.Polymer({
+    is: 'sc-push',
+
+    properties: {
+      /**
+       * A string that is used for GCM registration on Android
+       *
+       * @default '1076345567071'
+       */
+
+      gcmSenderId: {
+        type: String,
+        value: '1076345567071' // Parse.com default GCM Sender ID
+      }
+    },
+
+  });
+
+})();
+</script>
