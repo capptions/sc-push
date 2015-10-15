@@ -98,20 +98,23 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     },
 
     unregister: function () {
+      var success = this.log.bind(this._push, 'Successfully unregistered for push notifications');
+      var error = this.log.bind(this._push, 'Error while unregistering for push notifications');
+
       this.set('registrationId', undefined);
 
-      return this._push && this._push.unregister(
-        this.log.bind(this._push, 'Successfully unregistered for push notifications'),
-        this.log.bind(this._push, 'Error while unregistering for push notifications')
-      );
+      return this._push && this._push.unregister(success, error);
     },
 
     setApplicationIconBadgeNumber: function (count) {
-      return this._push && this._push.setApplicationIconBadgeNumber(
-        this.log.bind(this._push, 'Successfully set icon badge'),
-        this.log.bind(this._push, 'Error while setting icon badge'),
-        count
-      );
+      var success = this.log.bind(this._push, 'Successfully set icon badge');
+
+      return this._push && this._push.setApplicationIconBadgeNumber(success, function () {}, count);
+    },
+
+    getApplicationIconBadgeNumber: function (success) {
+      return !this._push && success(0) ||
+        this._push.getApplicationIconBadgeNumber(success, function () {});
     },
 
     clearApplicationIconBadge: function () {
