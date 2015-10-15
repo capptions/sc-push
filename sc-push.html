@@ -9,10 +9,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 -->
 <link rel="import" href="../polymer/polymer.html" />
 
-<dom-module id="sc-push">
-  <template></template>
-</dom-module>
-
 <script>
 (function () {
 
@@ -20,17 +16,107 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     is: 'sc-push',
 
     properties: {
+
       /**
        * A string that is used for GCM registration on Android
        *
        * @default '1076345567071'
        */
-
       gcmSenderId: {
         type: String,
         value: '1076345567071' // Parse.com default GCM Sender ID
+      },
+
+      /**
+       * A boolean to enable logs to be written to `console.log`
+       *
+       * @default false
+       */
+      debug: {
+        type: Boolean,
+        value: false
+      },
+
+      /**
+       * A string that contains the registrationId/deviceId after successful registration
+       *
+       * @default '1076345567071'
+       */
+      registrationId: {
+        type: String,
+        value: undefined,
+        notify: true
+      }
+
+    },
+
+    log: function () {
+      return this.debug && window.console.log.apply(window.console, arguments);
+    },
+
+    init: function () {
+      if (!window.PushNotification) {
+        return;
+      }
+
+      this._push = window.PushNotification && window.PushNotification.init({
+        android: {
+          senderID: this.gcmSenderId
+        },
+        ios: {
+          alert: true,
+          badge: true,
+          sound: true
+        },
+        windows: {}
+      });
+
+      this._push.on('registration', this.onRegistration.bind(this));
+
+      this._push.on('notification', this.onNotification.bind(this));
+
+      this._push.on('error', this.onError.bind(this));
+    },
+
+    onRegistration: function (e) {
+      this.log('Successfully registered for push notifications', e);
+      this.fire('registration', e);
+
+      if (e.registrationId) {
+        this.set('registrationId', e.registrationId);
       }
     },
+
+    onNotification: function (e) {
+      this.log('Push notification received', e);
+      this.fire('notification', e);
+    },
+
+    onError: function (e) {
+      this.log(e.message);
+      this.fire('error', e);
+    },
+
+    unregister: function () {
+      this.set('registrationId', undefined);
+
+      return this._push && this._push.unregister(
+        this.log.bind(this._push, 'Successfully unregistered for push notifications'),
+        this.log.bind(this._push, 'Error while unregistering for push notifications')
+      );
+    },
+
+    setApplicationIconBadgeNumber: function (count) {
+      return this._push && this._push.setApplicationIconBadgeNumber(
+        this.log.bind(this._push, 'Successfully set icon badge'),
+        this.log.bind(this._push, 'Error while setting icon badge'),
+        count
+      );
+    },
+
+    clearApplicationIconBadge: function () {
+      return this.setApplicationIconBadgeNumber(0);
+    }
 
   });
 
