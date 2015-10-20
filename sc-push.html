@@ -113,8 +113,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     },
 
     getApplicationIconBadgeNumber: function (success) {
-      return !this._push && success(0) ||
-        this._push.getApplicationIconBadgeNumber(success, function () {});
+      if (!this._push) {
+        return success(0);
+      }
+
+      return this._push.getApplicationIconBadgeNumber(success, function () {});
     },
 
     clearApplicationIconBadgeNumber: function () {
