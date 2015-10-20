@@ -98,8 +98,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     },
 
     unregister: function () {
-      var success = this.log.bind(this._push, 'Successfully unregistered for push notifications');
-      var error = this.log.bind(this._push, 'Error while unregistering for push notifications');
+      var success = this.log.bind(this, 'Successfully unregistered for push notifications');
+      var error = this.log.bind(this, 'Error while unregistering for push notifications');
 
       this.set('registrationId', undefined);
 
@@ -107,7 +107,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     },
 
     setApplicationIconBadgeNumber: function (count) {
-      var success = this.log.bind(this._push, 'Successfully set icon badge');
+      var success = this.log.bind(this, 'Successfully set icon badge');
 
       return this._push && this._push.setApplicationIconBadgeNumber(success, function () {}, count);
     },
