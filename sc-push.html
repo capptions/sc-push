@@ -28,6 +28,27 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       },
 
       /**
+       * A string that is used for the name of the android notification icon
+       * (android/res/drawable/{icon}.png)
+       *
+       * @default ''
+       */
+      icon: {
+        type: String,
+        value: ''
+      },
+
+      /**
+       * A string that is used for the background color of the android notification icon
+       *
+       * @default ''
+       */
+      iconColor: {
+        type: String,
+        value: ''
+      },
+
+      /**
        * A boolean to enable logs to be written to `console.log`
        *
        * @default false
@@ -59,7 +80,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         return;
       }
 
-      this._push = window.PushNotification && window.PushNotification.init({
+      var config = {
         android: {
           senderID: this.gcmSenderId
         },
@@ -69,7 +90,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           sound: true
         },
         windows: {}
-      });
+      };
+
+      if (this.icon) {
+        config.android.icon = this.icon;
+      }
+
+      if (this.icon) {
+        config.android.iconColor = this.iconColor;
+      }
+
+      this._push = window.PushNotification && window.PushNotification.init(config);
 
       this._push.on('registration', this.onRegistration.bind(this));
 
