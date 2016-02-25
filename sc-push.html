@@ -128,7 +128,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     onRegistration: function (e) {
       this.set('state', 'success');
       this.log('Successfully registered for push notifications', e);
-      this.fire('registration', e);
+      this.fire('registration', e, { bubbles: false });
 
       if (e.registrationId) {
         this.set('registrationId', e.registrationId);
@@ -137,13 +137,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     onNotification: function (e) {
       this.log('Push notification received', e);
-      this.fire('notification', e);
+      this.fire('notification', e, { bubbles: false });
     },
 
     onError: function (e) {
       this.set('state', 'error');
       this.log(e.message);
-      this.fire('error', e);
+      this.fire('error', e, { bubbles: false });
     },
 
     unregister: function () {
