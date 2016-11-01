@@ -28,24 +28,34 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       },
 
       /**
-       * A string that is used for the name of the android notification icon
-       * (android/res/drawable/{icon}.png)
+       * An object that determines default values for `config`
        *
-       * @default ''
        */
-      icon: {
-        type: String,
-        value: ''
+      defaultConfig: {
+        type: Object,
+        readOnly: true,
+        value: {
+          ios: {
+            alert: true,
+            badge: true,
+            sound: true
+          },
+          android: {
+            clearBadge: true,
+            icon: 'notification'
+          },
+          windows: {}
+        }
       },
 
       /**
-       * A string that is used for the background color of the android notification icon
+       * An object to configure various parameters on the push notificaiton layer
+       * Refer to: https://github.com/phonegap/phonegap-plugin-push/blob/master/docs/API.md
        *
-       * @default ''
+       * @default '{}'
        */
-      iconColor: {
-        type: String,
-        value: ''
+      config: {
+        type: Object
       },
 
       /**
@@ -96,32 +106,28 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         return setTimeout(this.init.bind(this), 1000);
       }
 
-      var config = {
-        android: {
-          senderID: this.gcmSenderId
-        },
-        ios: {
-          alert: true,
-          badge: true,
-          sound: true
-        },
-        windows: {}
-      };
+      var config = Object.assign({}, this.config);
 
-      if (this.icon) {
-        config.android.icon = this.icon;
-      }
+      // Set defaults
+      config.android = config.android || {};
 
-      if (this.icon) {
-        config.android.iconColor = this.iconColor;
+      ['ios', 'android', 'windows'].forEach(function (platform) {
+        config[platform] = config[platform] || {};
+        Object.keys(this.defaultConfig[platform]).forEach(function (key) {
+          if (typeof config[platform][key] === 'undefined') {
+            config[platform][key] = this.defaultConfig[platform][key];
+          }
+        }.bind(this));
+      }.bind(this));
+
+      if (typeof config.android.senderID === 'undefined' && this.gcmSenderId) {
+        config.android.senderID = this.gcmSenderId;
       }
 
       this._push = window.PushNotification && window.PushNotification.init(config);
 
       this._push.on('registration', this.onRegistration.bind(this));
-
       this._push.on('notification', this.onNotification.bind(this));
-
       this._push.on('error', this.onError.bind(this));
     },
 
