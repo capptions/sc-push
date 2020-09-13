@@ -199,7 +199,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       this.set('state', 'init');
 
       if (CapacitorPush) {
-        CapacitorPush.removeAllDeliveredNotifications();
+        CapacitorPush.removeAllDeliveredNotifications().then(success).catch(error);
         CapacitorPush.removeAllListeners();
       }
 
@@ -208,13 +208,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     setApplicationIconBadgeNumber: function (count) {
       var success = this.log.bind(this, 'Successfully set icon badge');
+      var error = function () {};
 
-      return this._push && this._push.setApplicationIconBadgeNumber(success, function () {}, count);
+      if (CapacitorPush && count === 0) {
+        return CapacitorPush.removeAllDeliveredNotifications().then(success).catch(error);
+      }
+
+      return this._push && this._push.setApplicationIconBadgeNumber(success, error, count);
     },
 
     getApplicationIconBadgeNumber: function (success) {
       if (!this._push) {
-        return success(0);
+        return success(null);
       }
 
       return this._push.getApplicationIconBadgeNumber(success, function () {});
