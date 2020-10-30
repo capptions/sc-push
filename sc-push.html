@@ -218,6 +218,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     },
 
     getApplicationIconBadgeNumber: function (success) {
+      if (CapacitorPush) {
+        return CapacitorPush
+          .getDeliveredNotifications()
+          .then(function (payload) {
+            success(((payload || {}).notifications || []).length);
+          })
+          .catch(function () {
+            success(0);
+          });
+      }
+
       if (!this._push) {
         return success(null);
       }
