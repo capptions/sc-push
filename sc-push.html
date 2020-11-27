@@ -116,13 +116,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }.bind(this));
 
         CapacitorPush.requestPermission()
-          .then(function (result) {
-            if (result.granted) {
-              CapacitorPush.register();
-            }
-            else {
-              this.onError({ message: JSON.stringify(result) });
-            }
+          .then(function () {
+            CapacitorPush.register();
           }.bind(this))
           .catch(function (err) {
             this.onError({ message: JSON.stringify(err) });
