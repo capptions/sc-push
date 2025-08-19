@@ -115,13 +115,34 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           this.onNotification(payload.notification);
         }.bind(this));
 
-        CapacitorPush.requestPermission()
-          .then(function () {
-            CapacitorPush.register();
-          }.bind(this))
-          .catch(function (err) {
-            this.onError({ message: JSON.stringify(err) });
-          }.bind(this));
+        if (CapacitorPush.checkPermissions) {
+          CapacitorPush.checkPermissions()
+            .then(function (permStatus) {
+              if (permStatus.receive === 'prompt') {
+                return CapacitorPush.requestPermissions();
+              }
+              return permStatus;
+            })
+            .then(function (permStatus) {
+              if (permStatus.receive !== 'granted') {
+                throw new Error('User denied push notification permissions!');
+              }
+              return CapacitorPush.register();
+            })
+            .then(function () {})
+            .catch(function (err) {
+              this.onError({ message: JSON.stringify(err) });
+            }.bind(this));
+        }
+        else {
+          CapacitorPush.requestPermission()
+            .then(function () {
+              CapacitorPush.register();
+            }.bind(this))
+            .catch(function (err) {
+              this.onError({ message: JSON.stringify(err) });
+            }.bind(this));
+        }
       }
       else if (!window.PushNotification) {
         this._fails = (this._fails || 0) + 1;
