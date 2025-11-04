@@ -99,11 +99,25 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     init: function () {
       if (CapacitorPush) {
+        if (this.initialized) {
+          return;
+        }
+
+        this.initialized = true;
+
+        // Remove any existing listeners to prevent duplicates
+        if (CapacitorPush.removeAllListeners) {
+          CapacitorPush.removeAllListeners();
+        }
+
+        // Add listeners BEFORE registering
         CapacitorPush.addListener('registration', function (token) {
+          this.log('Push registration event received', token);
           this.onRegistration({ registrationId: token.value });
         }.bind(this));
 
         CapacitorPush.addListener('registrationError', function (error) {
+          this.log('Push registration error event received', error);
           this.onError({ message: JSON.stringify(error) });
         }.bind(this));
 
@@ -115,33 +129,72 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           this.onNotification(payload.notification);
         }.bind(this));
 
+        // Register for push notifications
         if (CapacitorPush.checkPermissions) {
+          // Capacitor 3+ API
           CapacitorPush.checkPermissions()
             .then(function (permStatus) {
+              this.log('Current permission status:', permStatus);
               if (permStatus.receive === 'prompt') {
                 return CapacitorPush.requestPermissions();
               }
               return permStatus;
-            })
+            }.bind(this))
             .then(function (permStatus) {
+              this.log('Permission status after request:', permStatus);
               if (permStatus.receive !== 'granted') {
                 throw new Error('User denied push notification permissions!');
               }
+              this.log('Registering for push notifications...');
               return CapacitorPush.register();
-            })
-            .then(function () {})
+            }.bind(this))
+            .then(function () {
+              this.log('Push registration initiated successfully');
+            }.bind(this))
             .catch(function (err) {
+              this.log('Push registration error:', err);
+              this.onError({ message: JSON.stringify(err) });
+            }.bind(this));
+        }
+        else if (CapacitorPush.requestPermission) {
+          // Capacitor 2 API (singular method name)
+          CapacitorPush.requestPermission()
+            .then(function (permStatus) {
+              this.log('Permission granted:', permStatus);
+              this.log('Registering for push notifications...');
+              CapacitorPush.register();
+            }.bind(this))
+            .catch(function (err) {
+              this.log('Push registration error:', err);
+              this.onError({ message: JSON.stringify(err) });
+            }.bind(this));
+        }
+        else if (CapacitorPush.requestPermissions) {
+          // Capacitor 3+ API (plural method name, fallback)
+          CapacitorPush.requestPermissions()
+            .then(function (permStatus) {
+              this.log('Permission granted:', permStatus);
+              if (permStatus.receive === 'granted') {
+                this.log('Registering for push notifications...');
+                CapacitorPush.register();
+              } else {
+                throw new Error('User denied push notification permissions!');
+              }
+            }.bind(this))
+            .catch(function (err) {
+              this.log('Push registration error:', err);
               this.onError({ message: JSON.stringify(err) });
             }.bind(this));
         }
         else {
-          CapacitorPush.requestPermission()
-            .then(function () {
-              CapacitorPush.register();
-            }.bind(this))
-            .catch(function (err) {
-              this.onError({ message: JSON.stringify(err) });
-            }.bind(this));
+          // Fallback: try to register directly
+          this.log('Registering for push notifications (no permission check)...');
+          try {
+            CapacitorPush.register();
+          } catch (err) {
+            this.log('Push registration error:', err);
+            this.onError({ message: JSON.stringify(err) });
+          }
         }
       }
       else if (!window.PushNotification) {
